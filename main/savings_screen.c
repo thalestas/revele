@@ -7,6 +7,8 @@
 #include "display/lv_display.h"
 #include "draw/lv_draw_label.h"
 #include "esp_lvgl_port.h"
+#include "font/lv_font.h"
+#include "layouts/grid/lv_grid.h"
 #include "lv_api_map_v8.h"
 #include "misc/lv_anim.h"
 #include "misc/lv_area.h"
@@ -15,6 +17,7 @@
 #include "misc/lv_palette.h"
 #include "misc/lv_style.h"
 #include "misc/lv_style_gen.h"
+#include "misc/lv_types.h"
 #include "widgets/bar/lv_bar.h"
 #include "widgets/image/lv_image.h"
 
@@ -23,7 +26,7 @@ static void set_temp(void * bar, int32_t temp)
 	    lv_bar_set_value((lv_obj_t *)bar, temp, LV_ANIM_ON);
 }
 
-static void event_cb(lv_event_t * e)
+static void bar_event_cb(lv_event_t * e)
 {
     lv_obj_t * obj = lv_event_get_target_obj(e);
 
@@ -69,14 +72,14 @@ lv_obj_t *create_bar(lv_obj_t *obj, int32_t initial_value)
 	//Bar style
     static lv_style_t style_indic;
     lv_style_init(&style_indic);
-    lv_style_set_bg_opa(&style_indic, LV_OPA_COVER);
-	lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_TEAL));
-	lv_style_set_bg_grad_color(&style_indic, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
+    lv_style_set_bg_opa(&style_indic, BAR_OPACITY);
+	lv_style_set_bg_color(&style_indic, BAR_BG_COLOR);
+	lv_style_set_bg_grad_color(&style_indic, BAR_GRAD_COLOR);
 	lv_style_set_bg_grad_dir(&style_indic, LV_GRAD_DIR_VER);
 	lv_style_set_radius(&style_indic, 3);
 
     lv_obj_t *bar = lv_bar_create(obj);
-	lv_obj_add_event_cb(bar, event_cb, LV_EVENT_DRAW_MAIN_END, NULL);
+	lv_obj_add_event_cb(bar, bar_event_cb, LV_EVENT_DRAW_MAIN_END, NULL);
     lv_obj_add_style(bar, &style_indic, LV_PART_INDICATOR);
 	lv_obj_set_style_radius(bar, 3, LV_PART_MAIN);
     lv_bar_set_range(bar, 0, 100);
@@ -98,8 +101,11 @@ lv_obj_t *create_bar(lv_obj_t *obj, int32_t initial_value)
 void box_style_init(lv_style_t *const style)
 {
 	lv_style_set_radius(style, 5);
-	lv_style_set_bg_opa(style, LV_OPA_50);
+	lv_style_set_bg_opa(style, LV_OPA_COVER);
 	lv_style_set_bg_color(style, lv_palette_darken(LV_PALETTE_GREY,4));
+	lv_style_set_bg_color(style, (lv_color_t)BOX_BG_COLOR);
+	lv_style_set_bg_grad_color(style, (lv_color_t)BOX_GRAD_COLOR);
+	lv_style_set_bg_grad_dir(style, LV_GRAD_DIR_HOR);
 	lv_style_set_shadow_width(style, 1);
 	lv_style_set_shadow_color(style, lv_palette_main(LV_PALETTE_GREY));
 	lv_style_set_border_width(style, 0);
@@ -116,10 +122,20 @@ void subtitle_style_init(lv_style_t *const style)
 	lv_style_set_pad_all(style, 0);
 }
 
+void symbol_style_init(lv_style_t *const style)
+{
+	lv_style_set_text_color(style, lv_color_white());
+	lv_style_set_radius(style, 5);
+	lv_style_set_border_width(style, 0);
+	lv_style_set_border_color(style, lv_color_white());
+	lv_style_set_outline_width(style, 0);
+	lv_style_set_pad_all(style, 2);
+}
+
 void bar_label_style_init(lv_style_t *const style) 
 {
 	lv_style_set_text_color(style, lv_color_white());
-	lv_style_set_opa(style, LV_OPA_40);
+	lv_style_set_opa(style, LV_OPA_50);
 	lv_style_set_text_font(style, &lv_font_montserrat_12);
 	lv_style_set_transform_rotation(style, -900);
 	lv_style_set_transform_pivot_x(style, 8);
@@ -134,45 +150,46 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 
 	lv_obj_t *scr = lv_obj_create(NULL);
 
-	//background(scr);
 	LV_IMAGE_DECLARE(background_dither);
 	lv_obj_set_style_bg_img_src(scr, &background_dither, 0);
 
+	/************************ SAVING BOX *******************************/
 	//Box
 	static lv_style_t box_style;
 	lv_style_init(&box_style);
 	box_style_init(&box_style);
 
-	lv_obj_t *box = lv_obj_create(scr);
-	lv_obj_set_scrollbar_mode(box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_add_style(box, &box_style, 0);
-	lv_obj_set_style_size(box, 80, 100, 0);
-	lv_obj_align(box, LV_ALIGN_BOTTOM_RIGHT, -2, -2);
+
+	lv_obj_t *saving_box = lv_obj_create(scr);
+	lv_obj_set_scrollbar_mode(saving_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(saving_box, &box_style, 0);
+	lv_obj_set_style_size(saving_box, 80, 100, 0);
+	lv_obj_align(saving_box, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
 
 	//subtitle
 	static lv_style_t subtitle_style;
 	lv_style_init(&subtitle_style);
 	subtitle_style_init(&subtitle_style);
 
-	lv_obj_t *title = lv_label_create(box);
+	lv_obj_t *title = lv_label_create(saving_box);
 	lv_label_set_text(title, " Poupanca");
 	lv_obj_add_style(title, &subtitle_style, 0);
 	lv_obj_align(title,LV_ALIGN_TOP_LEFT, 0, 0);
 
 	//Box bar+label
-	lv_obj_t *bar_box1 = lv_obj_create(box);
+	lv_obj_t *bar_box1 = lv_obj_create(saving_box);
 	lv_obj_set_scrollbar_mode(bar_box1, LV_SCROLLBAR_MODE_OFF);
 	lv_obj_add_style(bar_box1, &box_style, 0);
 	lv_obj_set_style_bg_opa(bar_box1, LV_OPA_0, 0);
 	lv_obj_set_style_size(bar_box1, 40, 80, 0);
-	lv_obj_align(bar_box1, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+	lv_obj_align(bar_box1, LV_ALIGN_BOTTOM_LEFT, 0, -2);
 
-	lv_obj_t *bar_box2 = lv_obj_create(box);
+	lv_obj_t *bar_box2 = lv_obj_create(saving_box);
 	lv_obj_set_scrollbar_mode(bar_box2, LV_SCROLLBAR_MODE_OFF);
 	lv_obj_add_style(bar_box2, &box_style, 0);
 	lv_obj_set_style_bg_opa(bar_box2, LV_OPA_0, 0);
 	lv_obj_set_style_size(bar_box2, 40, 80, 0);
-	lv_obj_align(bar_box2, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+	lv_obj_align(bar_box2, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
 
 	//bars
 	lv_obj_t *bar = create_bar(bar_box1, start_value1);
@@ -194,6 +211,95 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 	lv_label_set_text(trade_rep, "trade rep");
 	lv_obj_add_style(trade_rep, &bar_label_style, 0);
 	lv_obj_align(trade_rep, LV_ALIGN_BOTTOM_LEFT, 20, -4);
+
+	/************************ SPEND STATUS BOX ***************************/
+
+	lv_obj_t *spend_box = lv_obj_create(scr);
+	lv_obj_set_scrollbar_mode(spend_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(spend_box, &box_style, 0);
+	lv_obj_set_style_size(spend_box, 145, 70, 0);
+	lv_obj_align(spend_box, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+
+	/************************ BILL  STATUS BOX ***************************/
+
+	//static int32_t column_dsc[] = {20, 20, LV_GRID_TEMPLATE_LAST};
+	static int32_t column_dsc[] = {
+		LV_GRID_FR(1), // house
+		LV_GRID_FR(1), // car
+		LV_GRID_FR(1), // light
+		LV_GRID_FR(1), // wifi
+		LV_GRID_FR(1), // water
+		LV_GRID_FR(1), // dumbbell
+		LV_GRID_FR(1), // insurance
+		LV_GRID_TEMPLATE_LAST
+	};
+	static int32_t row_dsc[] = {25, LV_GRID_TEMPLATE_LAST};
+
+	lv_obj_t *bill_box = lv_obj_create(scr);
+	lv_obj_set_scrollbar_mode(bill_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(bill_box, &box_style, 0);
+	lv_obj_set_style_size(bill_box, 145, 25, 0);
+	lv_obj_set_style_pad_left(bill_box, 5, 0);
+	lv_obj_set_style_pad_right(bill_box, 5, 0);
+	lv_obj_set_grid_dsc_array(bill_box, column_dsc, row_dsc);
+	lv_obj_align_to(bill_box, spend_box,  LV_ALIGN_OUT_TOP_MID, 0, -5);
+
+	static lv_style_t symbol_style;
+	lv_style_init(&symbol_style);
+	symbol_style_init(&symbol_style);
+
+	lv_obj_t *house = lv_label_create(bill_box);
+	lv_obj_add_style(house, &symbol_style, 0);
+	lv_obj_set_style_text_font(house, &fontawesome, 0);
+	lv_obj_set_style_text_color(house, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_label_set_text(house, SYMBOL_HOUSE);
+
+	lv_obj_t *car = lv_label_create(bill_box);
+	lv_obj_add_style(car, &symbol_style, 0);
+	lv_obj_set_style_text_font(car, &fontawesome, 0);
+	lv_obj_set_style_text_color(car, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_label_set_text(car, SYMBOL_CAR);
+
+	lv_obj_t *light = lv_label_create(bill_box);
+	lv_obj_add_style(light, &symbol_style, 0);
+	lv_obj_set_style_text_font(light, &fontawesome, 0);
+	lv_obj_set_style_text_color(light, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_obj_set_style_opa(light, LV_OPA_20, 0);
+	lv_label_set_text(light, SYMBOL_LIGHT);
+
+	lv_obj_t *wifi = lv_label_create(bill_box);
+	lv_obj_add_style(wifi, &symbol_style, 0);
+	lv_obj_set_style_text_font(wifi, &fontawesome, 0);
+	lv_obj_set_style_text_color(wifi, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_label_set_text(wifi, SYMBOL_WIFI);
+
+	lv_obj_t *water = lv_label_create(bill_box);
+	lv_obj_add_style(water, &symbol_style, 0);
+	lv_obj_set_style_text_font(water, &fontawesome, 0);
+	lv_obj_set_style_text_color(water, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_obj_set_style_opa(water, LV_OPA_20, 0);
+	lv_label_set_text(water, SYMBOL_WATER);
+
+	lv_obj_t *dumbbell = lv_label_create(bill_box);
+	lv_obj_add_style(dumbbell, &symbol_style, 0);
+	lv_obj_set_style_text_font(dumbbell, &fontawesome, 0);
+	lv_obj_set_style_text_color(dumbbell, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_label_set_text(dumbbell, SYMBOL_DUMBBELL);
+
+	lv_obj_t *insurance = lv_label_create(bill_box);
+	lv_obj_add_style(insurance, &symbol_style, 0);
+	lv_obj_set_style_text_font(insurance, &fontawesome, 0);
+	lv_obj_set_style_text_color(dumbbell, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	lv_obj_set_style_opa(insurance, LV_OPA_20, 0);
+	lv_label_set_text(insurance, SYMBOL_INSURANCE);
+
+	lv_obj_set_grid_cell(house, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(car, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(light, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(wifi, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(water, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(dumbbell, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(insurance, LV_GRID_ALIGN_CENTER, 6, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
 	lv_screen_load(scr);
 
