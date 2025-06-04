@@ -19,7 +19,9 @@
 #include "misc/lv_style_gen.h"
 #include "misc/lv_types.h"
 #include "widgets/bar/lv_bar.h"
+#include "widgets/chart/lv_chart.h"
 #include "widgets/image/lv_image.h"
+#include "widgets/scale/lv_scale.h"
 
 static void set_temp(void * bar, int32_t temp)
 {
@@ -102,7 +104,6 @@ void box_style_init(lv_style_t *const style)
 {
 	lv_style_set_radius(style, 5);
 	lv_style_set_bg_opa(style, LV_OPA_COVER);
-	lv_style_set_bg_color(style, lv_palette_darken(LV_PALETTE_GREY,4));
 	lv_style_set_bg_color(style, (lv_color_t)BOX_BG_COLOR);
 	lv_style_set_bg_grad_color(style, (lv_color_t)BOX_GRAD_COLOR);
 	lv_style_set_bg_grad_dir(style, LV_GRAD_DIR_HOR);
@@ -158,7 +159,6 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 	static lv_style_t box_style;
 	lv_style_init(&box_style);
 	box_style_init(&box_style);
-
 
 	lv_obj_t *saving_box = lv_obj_create(scr);
 	lv_obj_set_scrollbar_mode(saving_box, LV_SCROLLBAR_MODE_OFF);
@@ -219,6 +219,44 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 	lv_obj_add_style(spend_box, &box_style, 0);
 	lv_obj_set_style_size(spend_box, 145, 70, 0);
 	lv_obj_align(spend_box, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+
+	lv_obj_t *chart = lv_chart_create(spend_box);
+	lv_obj_set_size(chart, 141, 66);
+	lv_obj_center(chart);
+	lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
+	lv_obj_set_style_bg_opa(chart, LV_OPA_TRANSP, LV_PART_MAIN);
+	lv_chart_set_div_line_count(chart, 4, 12);
+	lv_obj_set_style_border_width(chart, 0, LV_PART_MAIN);
+	lv_obj_set_style_line_color(chart, lv_palette_darken(LV_PALETTE_BLUE_GREY, 3), LV_PART_MAIN);
+	lv_obj_set_style_line_opa(chart, LV_OPA_50, LV_PART_MAIN);
+	lv_obj_set_style_line_width(chart, 1, LV_PART_ITEMS);
+	lv_obj_set_style_size(chart, 3, 3, LV_PART_INDICATOR);
+
+	lv_obj_t *scale_bottom = lv_scale_create(spend_box);
+	lv_scale_set_mode(scale_bottom, LV_SCALE_MODE_HORIZONTAL_BOTTOM);
+	lv_obj_set_size(scale_bottom, 141, 20);
+	lv_scale_set_total_tick_count(scale_bottom, 12);
+	lv_scale_set_major_tick_every(scale_bottom, 1);
+	lv_obj_set_style_pad_hor(scale_bottom, lv_chart_get_first_point_center_offset(chart), 0);
+	static const char* month[] = {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
+	lv_scale_set_text_src(scale_bottom, month);
+	lv_obj_set_style_text_font(scale_bottom, &lv_font_montserrat_10, LV_PART_INDICATOR);
+	lv_obj_set_style_text_opa(scale_bottom, LV_OPA_50, LV_PART_INDICATOR);
+	lv_obj_set_style_text_color(scale_bottom, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), LV_PART_INDICATOR);
+	lv_obj_set_style_line_opa(scale_bottom, LV_OPA_TRANSP, LV_PART_INDICATOR);
+	lv_obj_set_style_line_opa(scale_bottom, LV_OPA_TRANSP, LV_PART_MAIN);
+	lv_obj_align_to(scale_bottom, chart, LV_ALIGN_OUT_BOTTOM_MID, 0, -15);
+
+	lv_chart_series_t *ser1 = lv_chart_add_series(chart, lv_palette_darken(LV_PALETTE_BLUE, 2), LV_CHART_AXIS_PRIMARY_Y);
+	lv_chart_series_t *ser2 = lv_chart_add_series(chart, lv_palette_darken(LV_PALETTE_ORANGE, 2), LV_CHART_AXIS_PRIMARY_Y);
+	int32_t i;
+	for(i=0; i<10; i++) 
+	{
+		lv_chart_set_next_value(chart, ser1, (int32_t)lv_rand(50, 90));
+		lv_chart_set_next_value(chart, ser2, (int32_t)lv_rand(10, 50));
+	}
+
+	lv_chart_refresh(chart);
 
 	/************************ BILL  STATUS BOX ***************************/
 

@@ -7,7 +7,7 @@
 #define BOX_GRAD_COLOR LV_COLOR_MAKE(0x16, 0x1d, 0x37)
 
 #define BAR_OPACITY LV_OPA_COVER
-#define BAR_BG_COLOR lv_palette_darken(LV_PALETTE_BLUE, 1)
+#define BAR_BG_COLOR lv_palette_lighten(LV_PALETTE_BLUE, 1)
 #define BAR_GRAD_COLOR lv_palette_darken(LV_PALETTE_BLUE, 2)
 
 LV_FONT_DECLARE(fontawesome);
