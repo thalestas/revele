@@ -10,6 +10,8 @@
 #define BAR_BG_COLOR lv_palette_lighten(LV_PALETTE_BLUE, 1)
 #define BAR_GRAD_COLOR lv_palette_darken(LV_PALETTE_BLUE, 2)
 
+#define LABEL_COLOR lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3)
+
 LV_FONT_DECLARE(fontawesome);
 #define SYMBOL_HOUSE		"\xEF\x80\x95"
 #define SYMBOL_CAR	 		"\xEF\x86\xB9"

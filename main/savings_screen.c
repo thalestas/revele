@@ -21,6 +21,7 @@
 #include "widgets/bar/lv_bar.h"
 #include "widgets/chart/lv_chart.h"
 #include "widgets/image/lv_image.h"
+#include "widgets/label/lv_label.h"
 #include "widgets/scale/lv_scale.h"
 
 static void set_temp(void * bar, int32_t temp)
@@ -116,7 +117,7 @@ void box_style_init(lv_style_t *const style)
 
 void subtitle_style_init(lv_style_t *const style)
 {
-	lv_style_set_text_color(style, lv_color_white());
+	lv_style_set_text_color(style, (lv_color_t)LABEL_COLOR);
 	lv_style_set_text_font(style, &lv_font_montserrat_12);
 	lv_style_set_border_width(style, 0);
 	lv_style_set_outline_width(style, 0);
@@ -153,28 +154,42 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 
 	LV_IMAGE_DECLARE(background_dither);
 	lv_obj_set_style_bg_img_src(scr, &background_dither, 0);
-
-	/************************ SAVING BOX *******************************/
-	//Box
+	
+	//box style
 	static lv_style_t box_style;
 	lv_style_init(&box_style);
 	box_style_init(&box_style);
-
-	lv_obj_t *saving_box = lv_obj_create(scr);
-	lv_obj_set_scrollbar_mode(saving_box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_add_style(saving_box, &box_style, 0);
-	lv_obj_set_style_size(saving_box, 80, 100, 0);
-	lv_obj_align(saving_box, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
-
+	
 	//subtitle
 	static lv_style_t subtitle_style;
 	lv_style_init(&subtitle_style);
 	subtitle_style_init(&subtitle_style);
 
+	/********************* DASHBOAD TITLE BOX **************************/
+	lv_obj_t *dashboard_title_box = lv_obj_create(scr);
+	lv_obj_add_style(dashboard_title_box, &box_style, 0);
+	lv_obj_set_style_size(dashboard_title_box, 230, 20, 0);
+	lv_obj_align(dashboard_title_box, LV_ALIGN_TOP_MID, 0, 5);
+
+	lv_obj_t *dashboard_label = lv_label_create(dashboard_title_box);
+	lv_label_set_text(dashboard_label, "Atualizado 04/06");
+	lv_obj_add_style(dashboard_label, &subtitle_style, 0);
+	lv_obj_align(dashboard_label, LV_ALIGN_LEFT_MID, 2, 0);
+
+	/************************ SAVING BOX *******************************/
+
+	lv_obj_t *saving_box = lv_obj_create(scr);
+	lv_obj_add_style(saving_box, &box_style, 0);
+	lv_obj_set_scrollbar_mode(saving_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_set_style_size(saving_box, 80, 100, 0);
+	lv_obj_align(saving_box, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
+
 	lv_obj_t *title = lv_label_create(saving_box);
-	lv_label_set_text(title, " Poupanca");
+	lv_label_set_long_mode(title, LV_LABEL_LONG_SCROLL_CIRCULAR);
+	lv_label_set_text(title, "Gastos Mensais");
 	lv_obj_add_style(title, &subtitle_style, 0);
-	lv_obj_align(title,LV_ALIGN_TOP_LEFT, 0, 0);
+	lv_obj_set_width(title, 80);
+	lv_obj_align(title,LV_ALIGN_TOP_LEFT, 2, 0);
 
 	//Box bar+label
 	lv_obj_t *bar_box1 = lv_obj_create(saving_box);
@@ -260,7 +275,6 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 
 	/************************ BILL  STATUS BOX ***************************/
 
-	//static int32_t column_dsc[] = {20, 20, LV_GRID_TEMPLATE_LAST};
 	static int32_t column_dsc[] = {
 		LV_GRID_FR(1), // house
 		LV_GRID_FR(1), // car
