@@ -125,7 +125,7 @@ void symbol_style_init(lv_style_t *const style)
 	lv_style_set_border_width(style, 0);
 	lv_style_set_border_color(style, lv_color_white());
 	lv_style_set_outline_width(style, 0);
-	lv_style_set_pad_all(style, 2);
+	lv_style_set_pad_all(style, 3);
 }
 
 
@@ -155,10 +155,22 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 	lv_obj_set_style_size(dashboard_title_box, 230, 20, 0);
 	lv_obj_align(dashboard_title_box, LV_ALIGN_TOP_MID, 0, 5);
 
-	lv_obj_t *dashboard_label = lv_label_create(dashboard_title_box);
-	lv_label_set_text(dashboard_label, LV_SYMBOL_REFRESH " 04/06");
-	lv_obj_add_style(dashboard_label, &subtitle_style, 0);
-	lv_obj_align(dashboard_label, LV_ALIGN_LEFT_MID, 5, 0);
+	lv_obj_t *refresh_data_label = lv_label_create(dashboard_title_box);
+	lv_label_set_text(refresh_data_label, LV_SYMBOL_REFRESH " 04/06");
+	lv_obj_add_style(refresh_data_label, &subtitle_style, 0);
+	lv_obj_align(refresh_data_label, LV_ALIGN_LEFT_MID, 5, 0);
+
+	lv_obj_t *dashboard_title = lv_label_create(dashboard_title_box);
+	lv_obj_set_style_text_font(dashboard_title, &lv_font_montserrat_16, 0);
+	lv_label_set_text(dashboard_title, "Financas");
+	lv_obj_add_style(dashboard_title, &subtitle_style, 0);
+	lv_obj_align(dashboard_title, LV_ALIGN_CENTER, 0, 0);
+
+	lv_obj_t *wifi_status = lv_label_create(dashboard_title_box);
+	lv_label_set_text(wifi_status, LV_SYMBOL_WIFI);
+	lv_obj_add_style(wifi_status, &subtitle_style, 0);
+	lv_obj_set_style_opa(wifi_status, LV_OPA_20, 0);
+	lv_obj_align(wifi_status, LV_ALIGN_RIGHT_MID, -5, 0);
 
 	/************************ SPEND BOX *******************************/
 	//box
@@ -329,26 +341,27 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 
 	lv_obj_t *house = lv_label_create(bill_box);
 	lv_obj_add_style(house, &symbol_style, 0);
-	lv_obj_set_style_text_font(house, &fontawesome, 0);
+	lv_obj_set_style_text_font(house, &nerdfont, 0);
 	lv_obj_set_style_text_color(house, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
 	lv_label_set_text(house, SYMBOL_HOUSE);
 
 	lv_obj_t *car = lv_label_create(bill_box);
 	lv_obj_add_style(car, &symbol_style, 0);
-	lv_obj_set_style_text_font(car, &fontawesome, 0);
+	lv_obj_set_style_text_font(car, &nerdfont, 0);
 	lv_obj_set_style_text_color(car, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
 	lv_label_set_text(car, SYMBOL_CAR);
 
 	lv_obj_t *light = lv_label_create(bill_box);
 	lv_obj_add_style(light, &symbol_style, 0);
-	lv_obj_set_style_text_font(light, &fontawesome, 0);
+	lv_obj_set_style_text_font(light, &nerdfont, 0);
 	lv_obj_set_style_text_color(light, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_obj_set_style_opa(light, LV_OPA_20, 0);
+	//lv_obj_set_style_opa(light, LV_OPA_20, 0);
+	lv_obj_set_style_opa(light, LV_OPA_COVER, 0);
 	lv_label_set_text(light, SYMBOL_LIGHT);
 
 	lv_obj_t *wifi = lv_label_create(bill_box);
 	lv_obj_add_style(wifi, &symbol_style, 0);
-	lv_obj_set_style_text_font(wifi, &fontawesome, 0);
+	lv_obj_set_style_text_font(wifi, &nerdfont, 0);
 	lv_obj_set_style_text_color(wifi, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
 	lv_label_set_text(wifi, SYMBOL_WIFI);
 
@@ -356,20 +369,22 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 	lv_obj_add_style(water, &symbol_style, 0);
 	lv_obj_set_style_text_font(water, &fontawesome, 0);
 	lv_obj_set_style_text_color(water, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_obj_set_style_opa(water, LV_OPA_20, 0);
+	//lv_obj_set_style_opa(water, LV_OPA_20, 0);
+	lv_obj_set_style_opa(water, LV_OPA_COVER, 0);
 	lv_label_set_text(water, SYMBOL_WATER);
 
 	lv_obj_t *dumbbell = lv_label_create(bill_box);
 	lv_obj_add_style(dumbbell, &symbol_style, 0);
-	lv_obj_set_style_text_font(dumbbell, &fontawesome, 0);
+	lv_obj_set_style_text_font(dumbbell, &nerdfont, 0);
 	lv_obj_set_style_text_color(dumbbell, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_label_set_text(dumbbell, SYMBOL_DUMBBELL);
+	lv_label_set_text(dumbbell, SYMBOL_KETTLEBELL);
 
 	lv_obj_t *insurance = lv_label_create(bill_box);
 	lv_obj_add_style(insurance, &symbol_style, 0);
-	lv_obj_set_style_text_font(insurance, &fontawesome, 0);
-	lv_obj_set_style_text_color(dumbbell, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_obj_set_style_opa(insurance, LV_OPA_20, 0);
+	lv_obj_set_style_text_font(insurance, &nerdfont, 0);
+	lv_obj_set_style_text_color(insurance, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
+	//lv_obj_set_style_opa(insurance, LV_OPA_20, 0);
+	lv_obj_set_style_opa(insurance, LV_OPA_COVER, 0);
 	lv_label_set_text(insurance, SYMBOL_INSURANCE);
 
 	lv_obj_set_grid_cell(house, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);

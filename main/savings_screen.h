@@ -22,12 +22,13 @@
 #define CHART_LINE2_COLOR lv_palette_darken(LV_PALETTE_DEEP_ORANGE, 1)
 
 LV_FONT_DECLARE(fontawesome);
-#define SYMBOL_HOUSE		"\xEF\x80\x95"
-#define SYMBOL_CAR	 		"\xEF\x86\xB9"
-#define SYMBOL_LIGHT 		"\xEF\x83\xAB"
-#define SYMBOL_WIFI  		"\xEF\x87\xAB"
+LV_FONT_DECLARE(nerdfont);
+#define SYMBOL_HOUSE		"\xEF\x91\xAD"
+#define SYMBOL_CAR	 		"\xEE\xBA\xA0"
+#define SYMBOL_LIGHT 		"\xEF\x90\x80"
+#define SYMBOL_WIFI  		"\xF3\xB0\xBA\x90"
 #define SYMBOL_WATER		"\xEE\x80\x86"
-#define SYMBOL_DUMBBELL		"\xEF\x91\x8B"
-#define SYMBOL_INSURANCE	"\xEE\x93\xB0"
+#define SYMBOL_KETTLEBELL		"\xF3\xB1\x8C\x80"
+#define SYMBOL_INSURANCE	"\xF3\xB0\xBE\x83"
 
 void savings_screen(uint32_t start_value1, uint32_t start_value2);
