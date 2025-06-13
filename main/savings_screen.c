@@ -1,5 +1,7 @@
 #include "savings_screen.h"
 #include "esp_lvgl_port.h"
+#include "misc/lv_area.h"
+#include <stdint.h>
 
 /*
  *  Default Styles
@@ -108,7 +110,7 @@ lv_obj_t *spend_bars_create_bar(lv_obj_t *obj, int32_t initial_value)
 
 void spend_bars_label_style(lv_style_t *const style) 
 {
-	lv_style_set_text_color(style, lv_color_white());
+	lv_style_set_text_color(style, LABEL_COLOR);
 	lv_style_set_opa(style, LV_OPA_50);
 	lv_style_set_text_font(style, &lv_font_montserrat_12);
 	lv_style_set_transform_rotation(style, -900);
@@ -118,7 +120,7 @@ void spend_bars_label_style(lv_style_t *const style)
 	lv_style_set_pad_all(style, 0);
 }
 
-void symbol_style_init(lv_style_t *const style)
+void bills_symbol_style_init(lv_style_t *const style)
 {
 	lv_style_set_text_color(style, lv_color_white());
 	lv_style_set_radius(style, 5);
@@ -128,8 +130,252 @@ void symbol_style_init(lv_style_t *const style)
 	lv_style_set_pad_all(style, 3);
 }
 
+void dashbard_bar_init(lv_obj_t *const dashboard_bar, const lv_style_t *const bar_style, const lv_style_t *const label_style, const saving_data *const data) 
+{
+	//bar style
+	lv_obj_add_style(dashboard_bar, bar_style, 0);
+	lv_obj_set_style_size(dashboard_bar, 230, 20, 0);
+	lv_obj_align(dashboard_bar, LV_ALIGN_TOP_MID, 0, 5);
 
-void savings_screen(uint32_t start_value1, uint32_t start_value2) 
+	//refresh symbol
+	lv_obj_t *refresh_data_symbol = lv_label_create(dashboard_bar);
+	lv_label_set_text(refresh_data_symbol, LV_SYMBOL_REFRESH " ");
+	lv_obj_add_style(refresh_data_symbol, label_style, 0);
+	lv_obj_align(refresh_data_symbol, LV_ALIGN_LEFT_MID, 5, 0);
+
+	//refresh date
+	lv_obj_t *refresh_data_label = lv_label_create(dashboard_bar);
+	lv_label_set_text(refresh_data_label, (data->saving_update_date));
+	lv_obj_add_style(refresh_data_label, label_style, 0);
+	lv_obj_set_style_text_font(refresh_data_label, &lv_font_montserrat_10, 0);
+	lv_obj_align_to(refresh_data_label, refresh_data_symbol, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
+
+	//Title
+	lv_obj_t *dashboard_title = lv_label_create(dashboard_bar);
+	lv_obj_set_style_text_font(dashboard_title, &lv_font_montserrat_16, 0);
+	lv_label_set_text(dashboard_title, "Financas");
+	lv_obj_add_style(dashboard_title, label_style, 0);
+	lv_obj_align(dashboard_title, LV_ALIGN_CENTER, 0, 0);
+
+	//wifi connection status
+	lv_obj_t *wifi_status = lv_label_create(dashboard_bar);
+	lv_label_set_text(wifi_status, LV_SYMBOL_WIFI);
+	lv_obj_add_style(wifi_status, label_style, 0);
+	lv_obj_set_style_opa(wifi_status, 
+			(data->connection_status) ? LV_OPA_COVER : LV_OPA_20,
+			0);
+	lv_obj_align(wifi_status, LV_ALIGN_RIGHT_MID, -5, 0);
+}
+
+void spend_box_init(lv_obj_t *const spend_box, const lv_style_t *const box_style, const lv_style_t *const label_style, const saving_data *const data)
+{
+	//spend bar style
+	lv_obj_add_style(spend_box, box_style, 0);
+	lv_obj_set_scrollbar_mode(spend_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_set_style_size(spend_box, 80, 100, 0);
+	lv_obj_align(spend_box, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
+	
+	//label
+	lv_obj_t *title = lv_label_create(spend_box);
+	lv_label_set_long_mode(title, LV_LABEL_LONG_SCROLL_CIRCULAR);
+	lv_label_set_text(title, "Gastos Mensais");
+	lv_obj_add_style(title, label_style, 0);
+	lv_obj_set_width(title, 80);
+	lv_obj_align(title,LV_ALIGN_TOP_LEFT, 2, 0);
+	
+	//container - total
+	lv_obj_t *total_box = lv_obj_create(spend_box);
+	lv_obj_set_scrollbar_mode(total_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(total_box, box_style, 0);
+	lv_obj_set_style_bg_opa(total_box, LV_OPA_0, 0);
+	lv_obj_set_style_size(total_box, 40, 80, 0);
+	lv_obj_align(total_box, LV_ALIGN_BOTTOM_LEFT, 0, -2);
+
+	//container - general
+	lv_obj_t *general_box = lv_obj_create(spend_box);
+	lv_obj_set_scrollbar_mode(general_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(general_box, box_style, 0);
+	lv_obj_set_style_bg_opa(general_box, LV_OPA_0, 0);
+	lv_obj_set_style_size(general_box, 40, 80, 0);
+	lv_obj_align(general_box, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
+	
+	//total bar chart
+	lv_obj_t *total_bar = spend_bars_create_bar(total_box, data->total_spend);
+	lv_obj_set_style_bg_color(total_bar, BAR1_BG_COLOR, LV_PART_INDICATOR);
+	lv_obj_set_style_bg_grad_color(total_bar, BAR1_GRAD_COLOR, LV_PART_INDICATOR);
+	lv_obj_align(total_bar, LV_ALIGN_CENTER, 0, 0);
+
+	//general bar chart
+	lv_obj_t *general_bar = spend_bars_create_bar(general_box, data->general_spend);
+	lv_obj_set_style_bg_color(general_bar, BAR2_BG_COLOR, LV_PART_INDICATOR);
+	lv_obj_set_style_bg_grad_color(general_bar, BAR2_GRAD_COLOR, LV_PART_INDICATOR);
+	lv_obj_align(general_bar, LV_ALIGN_CENTER, 0, 0);
+	
+	//bars labels style
+	static lv_style_t bar_label_style;
+	lv_style_init(&bar_label_style);
+	spend_bars_label_style(&bar_label_style);
+
+	//total label
+	lv_obj_t *total_label = lv_label_create(total_box);
+	lv_label_set_text(total_label, "total");
+	lv_obj_add_style(total_label, &bar_label_style, 0);
+	lv_obj_align_to(total_label, total_bar, LV_ALIGN_BOTTOM_LEFT, 15, -4);
+
+	//general label
+	lv_obj_t *general_label = lv_label_create(general_box);
+	lv_label_set_text(general_label, "geral");
+	lv_obj_add_style(general_label, &bar_label_style, 0);
+	lv_obj_align(general_label, LV_ALIGN_BOTTOM_LEFT, 20, -4);
+}
+
+void add_value_chart(lv_obj_t *const chart,  lv_chart_series_t *const serie, const uint32_t *const serie_data)
+{
+	int32_t i = 0;
+	while(serie_data[i] > 0) {
+		lv_chart_set_next_value(chart, serie, serie_data[i]);
+		i++;
+	}
+}
+
+void saving_chart_init(lv_obj_t *const saving_chart_box, const lv_style_t *const box_style, const lv_style_t *const label_style, const saving_data *const data)
+{
+	lv_obj_set_scrollbar_mode(saving_chart_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(saving_chart_box, box_style, 0);
+	lv_obj_set_style_size(saving_chart_box, 145, 70, 0);
+	lv_obj_align(saving_chart_box, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+	
+	//chart
+	lv_obj_t *chart = lv_chart_create(saving_chart_box);
+	lv_obj_set_size(chart, 141, 66);
+	lv_obj_align(chart, LV_ALIGN_BOTTOM_MID, 0, 0);
+	lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
+	lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_CIRCULAR);
+	lv_chart_set_div_line_count(chart, 5, 12);
+	lv_chart_set_point_count(chart, 12);
+	lv_obj_set_style_bg_opa(chart, LV_OPA_TRANSP, LV_PART_MAIN);
+	lv_obj_set_style_border_width(chart, 0, LV_PART_MAIN);
+	lv_obj_set_style_line_color(chart, lv_palette_darken(LV_PALETTE_BLUE_GREY, 3), LV_PART_MAIN);
+	lv_obj_set_style_line_opa(chart, LV_OPA_50, LV_PART_MAIN);
+	lv_obj_set_style_line_width(chart, 1, LV_PART_ITEMS);
+	lv_obj_set_style_size(chart, 3, 3, LV_PART_INDICATOR);
+	
+	//scale
+	lv_obj_t *scale = lv_scale_create(saving_chart_box);
+	lv_scale_set_mode(scale, LV_SCALE_MODE_HORIZONTAL_BOTTOM);
+	lv_obj_set_size(scale, 141, 20);
+	lv_scale_set_total_tick_count(scale, 12);
+	lv_scale_set_major_tick_every(scale, 1);
+	lv_obj_set_style_pad_hor(scale, lv_chart_get_first_point_center_offset(chart), 0);
+
+	//scale label
+	static const char* month[] = {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
+	lv_scale_set_text_src(scale, month);
+	lv_obj_set_style_text_font(scale, &lv_font_montserrat_10, LV_PART_INDICATOR);
+	lv_obj_set_style_text_opa(scale, LV_OPA_50, LV_PART_INDICATOR);
+	lv_obj_set_style_text_color(scale, LABEL_COLOR, LV_PART_INDICATOR);
+	lv_obj_set_style_line_opa(scale, LV_OPA_TRANSP, LV_PART_INDICATOR);
+	lv_obj_set_style_line_opa(scale, LV_OPA_TRANSP, LV_PART_MAIN);
+	lv_obj_align_to(scale, chart, LV_ALIGN_OUT_BOTTOM_MID, 0, -15);
+	
+	//label
+	lv_obj_t *chart_title = lv_label_create(saving_chart_box);
+	lv_label_set_long_mode(chart_title, LV_LABEL_LONG_SCROLL_CIRCULAR);
+	lv_label_set_text(chart_title, "Poupanca                            ");
+	lv_obj_add_style(chart_title, label_style, 0);
+	lv_obj_set_width(chart_title, 145);
+	lv_obj_align(chart_title, LV_ALIGN_TOP_MID, 2, 0);
+
+	//legend aforro
+	lv_obj_t *legend_aforro = lv_label_create(saving_chart_box);
+	lv_label_set_text(legend_aforro, "aforro");
+	lv_obj_add_style(legend_aforro, label_style, 0);
+	lv_obj_set_style_text_color(legend_aforro, CHART_LINE1_COLOR, 0);
+	lv_obj_set_style_text_font(legend_aforro, &lv_font_montserrat_10, 0);
+	lv_obj_set_style_opa(legend_aforro, LV_OPA_70, 0);
+	lv_obj_align(legend_aforro, LV_ALIGN_BOTTOM_RIGHT, -2, -10);
+
+	//legend trade
+	lv_obj_t *legend_trade = lv_label_create(saving_chart_box);
+	lv_label_set_text(legend_trade, "trade");
+	lv_obj_add_style(legend_trade, label_style, 0);
+	lv_obj_set_style_text_color(legend_trade, CHART_LINE2_COLOR, 0);
+	lv_obj_set_style_text_font(legend_trade, &lv_font_montserrat_10, 0);
+	lv_obj_set_style_opa(legend_trade, LV_OPA_70, 0);
+	lv_obj_align_to(legend_trade, legend_aforro, LV_ALIGN_OUT_TOP_MID, 0, 0);
+
+	lv_chart_series_t *aforro = lv_chart_add_series(chart, CHART_LINE1_COLOR, LV_CHART_AXIS_PRIMARY_Y);
+	lv_chart_series_t *trade = lv_chart_add_series(chart, CHART_LINE2_COLOR, LV_CHART_AXIS_PRIMARY_Y);
+
+	add_value_chart(chart, aforro, data->aforro_value);
+	add_value_chart(chart, trade, data->trade_value);
+
+	lv_chart_refresh(chart);
+}
+
+void bill_symbol_init(lv_obj_t *const symbol_obj, const lv_style_t *const symbol_style, const lv_font_t *const font, const char *const symbol, const bool status)
+{
+	lv_obj_add_style(symbol_obj, symbol_style, 0);
+	lv_obj_set_style_text_font(symbol_obj, font, 0);
+	lv_obj_set_style_text_color(symbol_obj, LABEL_COLOR, 0);
+	lv_obj_set_style_opa(symbol_obj, 
+			status ? LV_OPA_COVER : LV_OPA_20,
+			0);
+	lv_label_set_text(symbol_obj, symbol);
+}
+
+void bill_box_init(lv_obj_t *const bill_box, const lv_obj_t *const saving_chart_box, const lv_style_t *const box_style, const lv_style_t *const label_style, const saving_data *const data)
+{
+	static int32_t column_dsc[] = 
+	{
+		LV_GRID_FR(1), // house
+		LV_GRID_FR(1), // car
+		LV_GRID_FR(1), // light
+		LV_GRID_FR(1), // wifi
+		LV_GRID_FR(1), // water
+		LV_GRID_FR(1), // dumbbell
+		LV_GRID_FR(1), // insurance
+		LV_GRID_TEMPLATE_LAST
+	};
+	static int32_t row_dsc[] = {25, LV_GRID_TEMPLATE_LAST};
+
+	lv_obj_set_scrollbar_mode(bill_box, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_add_style(bill_box, box_style, 0);
+	lv_obj_set_style_size(bill_box, 145, 25, 0);
+	lv_obj_set_style_pad_left(bill_box, 5, 0);
+	lv_obj_set_style_pad_right(bill_box, 5, 0);
+	lv_obj_set_grid_dsc_array(bill_box, column_dsc, row_dsc);
+	lv_obj_align_to(bill_box, saving_chart_box,  LV_ALIGN_OUT_TOP_MID, 0, -5);
+
+	static lv_style_t symbol_style;
+	lv_style_init(&symbol_style);
+	bills_symbol_style_init(&symbol_style);
+
+	lv_obj_t *house = lv_label_create(bill_box);
+	bill_symbol_init(house, &symbol_style, &nerdfont, SYMBOL_HOUSE, data->rent_status);
+	lv_obj_t *car = lv_label_create(bill_box);
+	bill_symbol_init(car, &symbol_style, &nerdfont, SYMBOL_CAR, data->car_status);
+	lv_obj_t *light = lv_label_create(bill_box);
+	bill_symbol_init(light, &symbol_style, &nerdfont, SYMBOL_LIGHT, data->light_status);
+	lv_obj_t *wifi = lv_label_create(bill_box);
+	bill_symbol_init(wifi, &symbol_style, &nerdfont, SYMBOL_WIFI, data->wifi_status);
+	lv_obj_t *water = lv_label_create(bill_box);
+	bill_symbol_init(water, &symbol_style, &fontawesome, SYMBOL_WATER, data->water_status);
+	lv_obj_t *dumbbell = lv_label_create(bill_box);
+	bill_symbol_init(dumbbell, &symbol_style, &nerdfont, SYMBOL_KETTLEBELL, data->gym_status);
+	lv_obj_t *insurance = lv_label_create(bill_box);
+	bill_symbol_init(insurance, &symbol_style, &nerdfont, SYMBOL_INSURANCE, data->insurance_status);
+
+	lv_obj_set_grid_cell(house, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(car, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(light, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(wifi, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(water, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(dumbbell, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	lv_obj_set_grid_cell(insurance, LV_GRID_ALIGN_CENTER, 6, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+}
+
+void savings_screen(const saving_data *data) 
 {
 	lvgl_port_lock(0);
 
@@ -149,251 +395,21 @@ void savings_screen(uint32_t start_value1, uint32_t start_value2)
 	lv_style_init(&subtitle_style);
 	subtitle_style_init(&subtitle_style);
 
-	/********************* DASHBOAD BAR  BOX **************************/
-	lv_obj_t *dashboard_title_box = lv_obj_create(scr);
-	lv_obj_add_style(dashboard_title_box, &box_style, 0);
-	lv_obj_set_style_size(dashboard_title_box, 230, 20, 0);
-	lv_obj_align(dashboard_title_box, LV_ALIGN_TOP_MID, 0, 5);
-
-	lv_obj_t *refresh_data_label = lv_label_create(dashboard_title_box);
-	lv_label_set_text(refresh_data_label, LV_SYMBOL_REFRESH " 04/06");
-	lv_obj_add_style(refresh_data_label, &subtitle_style, 0);
-	lv_obj_align(refresh_data_label, LV_ALIGN_LEFT_MID, 5, 0);
-
-	lv_obj_t *dashboard_title = lv_label_create(dashboard_title_box);
-	lv_obj_set_style_text_font(dashboard_title, &lv_font_montserrat_16, 0);
-	lv_label_set_text(dashboard_title, "Financas");
-	lv_obj_add_style(dashboard_title, &subtitle_style, 0);
-	lv_obj_align(dashboard_title, LV_ALIGN_CENTER, 0, 0);
-
-	lv_obj_t *wifi_status = lv_label_create(dashboard_title_box);
-	lv_label_set_text(wifi_status, LV_SYMBOL_WIFI);
-	lv_obj_add_style(wifi_status, &subtitle_style, 0);
-	lv_obj_set_style_opa(wifi_status, LV_OPA_20, 0);
-	lv_obj_align(wifi_status, LV_ALIGN_RIGHT_MID, -5, 0);
+	/************************ DASHBOAD BAR ****************************/
+	lv_obj_t *dashboard_bar = lv_obj_create(scr);
+	dashbard_bar_init(dashboard_bar, &box_style, &subtitle_style, data);
 
 	/************************ SPEND BOX *******************************/
-	//box
 	lv_obj_t *spend_box = lv_obj_create(scr);
-	lv_obj_add_style(spend_box, &box_style, 0);
-	lv_obj_set_scrollbar_mode(spend_box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_set_style_size(spend_box, 80, 100, 0);
-	lv_obj_align(spend_box, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
-
-	//label
-	lv_obj_t *title = lv_label_create(spend_box);
-	lv_label_set_long_mode(title, LV_LABEL_LONG_SCROLL_CIRCULAR);
-	lv_label_set_text(title, "Gastos Mensais");
-	lv_obj_add_style(title, &subtitle_style, 0);
-	lv_obj_set_width(title, 80);
-	lv_obj_align(title,LV_ALIGN_TOP_LEFT, 2, 0);
-
-	//container - total
-	lv_obj_t *total_box = lv_obj_create(spend_box);
-	lv_obj_set_scrollbar_mode(total_box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_add_style(total_box, &box_style, 0);
-	lv_obj_set_style_bg_opa(total_box, LV_OPA_0, 0);
-	lv_obj_set_style_size(total_box, 40, 80, 0);
-	lv_obj_align(total_box, LV_ALIGN_BOTTOM_LEFT, 0, -2);
-
-	//container - general
-	lv_obj_t *general_box = lv_obj_create(spend_box);
-	lv_obj_set_scrollbar_mode(general_box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_add_style(general_box, &box_style, 0);
-	lv_obj_set_style_bg_opa(general_box, LV_OPA_0, 0);
-	lv_obj_set_style_size(general_box, 40, 80, 0);
-	lv_obj_align(general_box, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
-
-	//total bar
-	lv_obj_t *total_bar = spend_bars_create_bar(total_box, start_value1);
-	lv_obj_set_style_bg_color(total_bar, BAR1_BG_COLOR, LV_PART_INDICATOR);
-	lv_obj_set_style_bg_grad_color(total_bar, BAR1_GRAD_COLOR, LV_PART_INDICATOR);
-	lv_obj_align(total_bar, LV_ALIGN_CENTER, 0, 0);
-
-	//general bar
-	lv_obj_t *general_bar = spend_bars_create_bar(general_box, start_value2);
-	lv_obj_set_style_bg_color(general_bar, BAR2_BG_COLOR, LV_PART_INDICATOR);
-	lv_obj_set_style_bg_grad_color(general_bar, BAR2_GRAD_COLOR, LV_PART_INDICATOR);
-	lv_obj_align(general_bar, LV_ALIGN_CENTER, 0, 0);
-
-	//bars labels style
-	static lv_style_t bar_label_style;
-	lv_style_init(&bar_label_style);
-	spend_bars_label_style(&bar_label_style);
-
-	//total label
-	lv_obj_t *total_label = lv_label_create(total_box);
-	lv_label_set_text(total_label, "total");
-	lv_obj_add_style(total_label, &bar_label_style, 0);
-	lv_obj_align_to(total_label, total_bar, LV_ALIGN_BOTTOM_LEFT, 15, -4);
-
-	//general label
-	lv_obj_t *general_label = lv_label_create(general_box);
-	lv_label_set_text(general_label, "geral");
-	lv_obj_add_style(general_label, &bar_label_style, 0);
-	lv_obj_align(general_label, LV_ALIGN_BOTTOM_LEFT, 20, -4);
+	spend_box_init(spend_box, &box_style, &subtitle_style, data);
 
 	/************************ SAVING CHART BOX ***************************/
-	//box
 	lv_obj_t *saving_box = lv_obj_create(scr);
-	lv_obj_set_scrollbar_mode(saving_box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_add_style(saving_box, &box_style, 0);
-	lv_obj_set_style_size(saving_box, 145, 70, 0);
-	lv_obj_align(saving_box, LV_ALIGN_BOTTOM_LEFT, 5, -5);
-
-	//chart
-	lv_obj_t *chart = lv_chart_create(saving_box);
-	lv_obj_set_size(chart, 141, 66);
-	lv_obj_align(chart, LV_ALIGN_BOTTOM_MID, 0, 0);
-	lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
-	lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_CIRCULAR);
-	lv_chart_set_div_line_count(chart, 5, 12);
-	lv_chart_set_point_count(chart, 12);
-	lv_obj_set_style_bg_opa(chart, LV_OPA_TRANSP, LV_PART_MAIN);
-	lv_obj_set_style_border_width(chart, 0, LV_PART_MAIN);
-	lv_obj_set_style_line_color(chart, lv_palette_darken(LV_PALETTE_BLUE_GREY, 3), LV_PART_MAIN);
-	lv_obj_set_style_line_opa(chart, LV_OPA_50, LV_PART_MAIN);
-	lv_obj_set_style_line_width(chart, 1, LV_PART_ITEMS);
-	lv_obj_set_style_size(chart, 3, 3, LV_PART_INDICATOR);
-	
-	//scale
-	lv_obj_t *scale = lv_scale_create(saving_box);
-	lv_scale_set_mode(scale, LV_SCALE_MODE_HORIZONTAL_BOTTOM);
-	lv_obj_set_size(scale, 141, 20);
-	lv_scale_set_total_tick_count(scale, 12);
-	lv_scale_set_major_tick_every(scale, 1);
-	lv_obj_set_style_pad_hor(scale, lv_chart_get_first_point_center_offset(chart), 0);
-
-	//scale label
-	static const char* month[] = {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
-	lv_scale_set_text_src(scale, month);
-	lv_obj_set_style_text_font(scale, &lv_font_montserrat_10, LV_PART_INDICATOR);
-	lv_obj_set_style_text_opa(scale, LV_OPA_50, LV_PART_INDICATOR);
-	lv_obj_set_style_text_color(scale, LABEL_COLOR, LV_PART_INDICATOR);
-	lv_obj_set_style_line_opa(scale, LV_OPA_TRANSP, LV_PART_INDICATOR);
-	lv_obj_set_style_line_opa(scale, LV_OPA_TRANSP, LV_PART_MAIN);
-	lv_obj_align_to(scale, chart, LV_ALIGN_OUT_BOTTOM_MID, 0, -15);
-	
-	//label
-	lv_obj_t *chart_title = lv_label_create(saving_box);
-	lv_label_set_long_mode(chart_title, LV_LABEL_LONG_SCROLL_CIRCULAR);
-	lv_label_set_text(chart_title, "Poupanca                            ");
-	lv_obj_add_style(chart_title, &subtitle_style, 0);
-	lv_obj_set_width(chart_title, 145);
-	lv_obj_align(chart_title, LV_ALIGN_TOP_MID, 2, 0);
-
-	//legend aforro
-	lv_obj_t *legend_aforro = lv_label_create(saving_box);
-	lv_label_set_text(legend_aforro, "aforro");
-	lv_obj_add_style(legend_aforro, &subtitle_style, 0);
-	lv_obj_set_style_text_color(legend_aforro, CHART_LINE1_COLOR, 0);
-	lv_obj_set_style_text_font(legend_aforro, &lv_font_montserrat_10, 0);
-	lv_obj_set_style_opa(legend_aforro, LV_OPA_70, 0);
-	lv_obj_align(legend_aforro, LV_ALIGN_BOTTOM_RIGHT, -2, -10);
-
-	//legend trade
-	lv_obj_t *legend_trade = lv_label_create(saving_box);
-	lv_label_set_text(legend_trade, "trade");
-	lv_obj_add_style(legend_trade, &subtitle_style, 0);
-	lv_obj_set_style_text_color(legend_trade, CHART_LINE2_COLOR, 0);
-	lv_obj_set_style_text_font(legend_trade, &lv_font_montserrat_10, 0);
-	lv_obj_set_style_opa(legend_trade, LV_OPA_70, 0);
-	lv_obj_align_to(legend_trade, legend_aforro, LV_ALIGN_OUT_TOP_MID, 0, 0);
-
-
-	lv_chart_series_t *ser1 = lv_chart_add_series(chart, CHART_LINE1_COLOR, LV_CHART_AXIS_PRIMARY_Y);
-	lv_chart_series_t *ser2 = lv_chart_add_series(chart, CHART_LINE2_COLOR, LV_CHART_AXIS_PRIMARY_Y);
-	int32_t i;
-	for(i=0; i<11; i++) 
-	{
-		lv_chart_set_next_value(chart, ser1, (int32_t)lv_rand(0, 100));
-		lv_chart_set_next_value(chart, ser2, (int32_t)lv_rand(0, 100));
-	}
-
-	lv_chart_refresh(chart);
+	saving_chart_init(saving_box, &box_style, &subtitle_style, data);
 
 	/************************ BILL  STATUS BOX ***************************/
-
-	static int32_t column_dsc[] = {
-		LV_GRID_FR(1), // house
-		LV_GRID_FR(1), // car
-		LV_GRID_FR(1), // light
-		LV_GRID_FR(1), // wifi
-		LV_GRID_FR(1), // water
-		LV_GRID_FR(1), // dumbbell
-		LV_GRID_FR(1), // insurance
-		LV_GRID_TEMPLATE_LAST
-	};
-	static int32_t row_dsc[] = {25, LV_GRID_TEMPLATE_LAST};
-
 	lv_obj_t *bill_box = lv_obj_create(scr);
-	lv_obj_set_scrollbar_mode(bill_box, LV_SCROLLBAR_MODE_OFF);
-	lv_obj_add_style(bill_box, &box_style, 0);
-	lv_obj_set_style_size(bill_box, 145, 25, 0);
-	lv_obj_set_style_pad_left(bill_box, 5, 0);
-	lv_obj_set_style_pad_right(bill_box, 5, 0);
-	lv_obj_set_grid_dsc_array(bill_box, column_dsc, row_dsc);
-	lv_obj_align_to(bill_box, saving_box,  LV_ALIGN_OUT_TOP_MID, 0, -5);
-
-	static lv_style_t symbol_style;
-	lv_style_init(&symbol_style);
-	symbol_style_init(&symbol_style);
-
-	lv_obj_t *house = lv_label_create(bill_box);
-	lv_obj_add_style(house, &symbol_style, 0);
-	lv_obj_set_style_text_font(house, &nerdfont, 0);
-	lv_obj_set_style_text_color(house, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_label_set_text(house, SYMBOL_HOUSE);
-
-	lv_obj_t *car = lv_label_create(bill_box);
-	lv_obj_add_style(car, &symbol_style, 0);
-	lv_obj_set_style_text_font(car, &nerdfont, 0);
-	lv_obj_set_style_text_color(car, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_label_set_text(car, SYMBOL_CAR);
-
-	lv_obj_t *light = lv_label_create(bill_box);
-	lv_obj_add_style(light, &symbol_style, 0);
-	lv_obj_set_style_text_font(light, &nerdfont, 0);
-	lv_obj_set_style_text_color(light, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	//lv_obj_set_style_opa(light, LV_OPA_20, 0);
-	lv_obj_set_style_opa(light, LV_OPA_COVER, 0);
-	lv_label_set_text(light, SYMBOL_LIGHT);
-
-	lv_obj_t *wifi = lv_label_create(bill_box);
-	lv_obj_add_style(wifi, &symbol_style, 0);
-	lv_obj_set_style_text_font(wifi, &nerdfont, 0);
-	lv_obj_set_style_text_color(wifi, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_label_set_text(wifi, SYMBOL_WIFI);
-
-	lv_obj_t *water = lv_label_create(bill_box);
-	lv_obj_add_style(water, &symbol_style, 0);
-	lv_obj_set_style_text_font(water, &fontawesome, 0);
-	lv_obj_set_style_text_color(water, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	//lv_obj_set_style_opa(water, LV_OPA_20, 0);
-	lv_obj_set_style_opa(water, LV_OPA_COVER, 0);
-	lv_label_set_text(water, SYMBOL_WATER);
-
-	lv_obj_t *dumbbell = lv_label_create(bill_box);
-	lv_obj_add_style(dumbbell, &symbol_style, 0);
-	lv_obj_set_style_text_font(dumbbell, &nerdfont, 0);
-	lv_obj_set_style_text_color(dumbbell, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	lv_label_set_text(dumbbell, SYMBOL_KETTLEBELL);
-
-	lv_obj_t *insurance = lv_label_create(bill_box);
-	lv_obj_add_style(insurance, &symbol_style, 0);
-	lv_obj_set_style_text_font(insurance, &nerdfont, 0);
-	lv_obj_set_style_text_color(insurance, lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3), 0);
-	//lv_obj_set_style_opa(insurance, LV_OPA_20, 0);
-	lv_obj_set_style_opa(insurance, LV_OPA_COVER, 0);
-	lv_label_set_text(insurance, SYMBOL_INSURANCE);
-
-	lv_obj_set_grid_cell(house, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-	lv_obj_set_grid_cell(car, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-	lv_obj_set_grid_cell(light, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-	lv_obj_set_grid_cell(wifi, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-	lv_obj_set_grid_cell(water, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-	lv_obj_set_grid_cell(dumbbell, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-	lv_obj_set_grid_cell(insurance, LV_GRID_ALIGN_CENTER, 6, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+	bill_box_init(bill_box, saving_box, &box_style, &subtitle_style, data);
 
 	lv_screen_load(scr);
 

@@ -31,4 +31,20 @@ LV_FONT_DECLARE(nerdfont);
 #define SYMBOL_KETTLEBELL		"\xF3\xB1\x8C\x80"
 #define SYMBOL_INSURANCE	"\xF3\xB0\xBE\x83"
 
-void savings_screen(uint32_t start_value1, uint32_t start_value2);
+typedef struct  {
+	const char *saving_update_date;
+	bool connection_status;
+	bool rent_status;
+	bool car_status;
+	bool light_status;
+	bool wifi_status;
+	bool water_status;
+	bool gym_status;
+	bool insurance_status;
+	uint32_t total_spend;
+	uint32_t general_spend;
+	uint32_t aforro_value[12];
+	uint32_t trade_value[12];
+} saving_data;
+
+void savings_screen(const saving_data *data);
