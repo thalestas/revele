@@ -1,7 +1,4 @@
 #include "savings_screen.h"
-#include "esp_lvgl_port.h"
-#include "misc/lv_area.h"
-#include <stdint.h>
 
 /*
  *  Default Styles
@@ -128,43 +125,6 @@ void bills_symbol_style_init(lv_style_t *const style)
 	lv_style_set_border_color(style, lv_color_white());
 	lv_style_set_outline_width(style, 0);
 	lv_style_set_pad_all(style, 3);
-}
-
-void dashbard_bar_init(lv_obj_t *const dashboard_bar, const lv_style_t *const bar_style, const lv_style_t *const label_style, const saving_data *const data) 
-{
-	//bar style
-	lv_obj_add_style(dashboard_bar, bar_style, 0);
-	lv_obj_set_style_size(dashboard_bar, 230, 20, 0);
-	lv_obj_align(dashboard_bar, LV_ALIGN_TOP_MID, 0, 5);
-
-	//refresh symbol
-	lv_obj_t *refresh_data_symbol = lv_label_create(dashboard_bar);
-	lv_label_set_text(refresh_data_symbol, LV_SYMBOL_REFRESH " ");
-	lv_obj_add_style(refresh_data_symbol, label_style, 0);
-	lv_obj_align(refresh_data_symbol, LV_ALIGN_LEFT_MID, 5, 0);
-
-	//refresh date
-	lv_obj_t *refresh_data_label = lv_label_create(dashboard_bar);
-	lv_label_set_text(refresh_data_label, (data->saving_update_date));
-	lv_obj_add_style(refresh_data_label, label_style, 0);
-	lv_obj_set_style_text_font(refresh_data_label, &lv_font_montserrat_10, 0);
-	lv_obj_align_to(refresh_data_label, refresh_data_symbol, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
-
-	//Title
-	lv_obj_t *dashboard_title = lv_label_create(dashboard_bar);
-	lv_obj_set_style_text_font(dashboard_title, &lv_font_montserrat_16, 0);
-	lv_label_set_text(dashboard_title, "Financas");
-	lv_obj_add_style(dashboard_title, label_style, 0);
-	lv_obj_align(dashboard_title, LV_ALIGN_CENTER, 0, 0);
-
-	//wifi connection status
-	lv_obj_t *wifi_status = lv_label_create(dashboard_bar);
-	lv_label_set_text(wifi_status, LV_SYMBOL_WIFI);
-	lv_obj_add_style(wifi_status, label_style, 0);
-	lv_obj_set_style_opa(wifi_status, 
-			(data->connection_status) ? LV_OPA_COVER : LV_OPA_20,
-			0);
-	lv_obj_align(wifi_status, LV_ALIGN_RIGHT_MID, -5, 0);
 }
 
 void spend_box_init(lv_obj_t *const spend_box, const lv_style_t *const box_style, const lv_style_t *const label_style, const saving_data *const data)
@@ -375,9 +335,9 @@ void bill_box_init(lv_obj_t *const bill_box, const lv_obj_t *const saving_chart_
 	lv_obj_set_grid_cell(insurance, LV_GRID_ALIGN_CENTER, 6, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 }
 
-void savings_screen(const saving_data *data) 
+lv_obj_t* savings_screen(const saving_data *data) 
 {
-	lvgl_port_lock(0);
+	//lvgl_port_lock(0);
 
 	lv_obj_t *scr = lv_obj_create(NULL);
 
@@ -395,10 +355,6 @@ void savings_screen(const saving_data *data)
 	lv_style_init(&subtitle_style);
 	subtitle_style_init(&subtitle_style);
 
-	/************************ DASHBOAD BAR ****************************/
-	lv_obj_t *dashboard_bar = lv_obj_create(scr);
-	dashbard_bar_init(dashboard_bar, &box_style, &subtitle_style, data);
-
 	/************************ SPEND BOX *******************************/
 	lv_obj_t *spend_box = lv_obj_create(scr);
 	spend_box_init(spend_box, &box_style, &subtitle_style, data);
@@ -411,7 +367,9 @@ void savings_screen(const saving_data *data)
 	lv_obj_t *bill_box = lv_obj_create(scr);
 	bill_box_init(bill_box, saving_box, &box_style, &subtitle_style, data);
 
-	lv_screen_load(scr);
+	//lv_screen_load(scr);
 
-	lvgl_port_unlock();
+	//lvgl_port_unlock();
+
+	return scr;
 }

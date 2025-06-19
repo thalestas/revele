@@ -47,4 +47,6 @@ typedef struct  {
 	uint32_t trade_value[12];
 } saving_data;
 
-void savings_screen(const saving_data *data);
+void box_style_init(lv_style_t *const style);
+void subtitle_style_init(lv_style_t *const style);
+lv_obj_t* savings_screen(const saving_data *data);
