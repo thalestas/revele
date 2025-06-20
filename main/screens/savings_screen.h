@@ -3,9 +3,6 @@
 #include "lvgl.h"
 #include <stdint.h>
 
-/* BOX BACKGROUND COLORS */
-#define BOX_BG_COLOR LV_COLOR_MAKE(0x15, 0x2f, 0x50)
-#define BOX_GRAD_COLOR LV_COLOR_MAKE(0x16, 0x1d, 0x37)
 
 /* SPEND BARS COLORS */
 #define BAR_OPACITY LV_OPA_COVER
@@ -13,9 +10,6 @@
 #define BAR1_GRAD_COLOR lv_palette_darken(LV_PALETTE_BLUE, 4)
 #define BAR2_BG_COLOR lv_palette_lighten(LV_PALETTE_DEEP_ORANGE, 1)
 #define BAR2_GRAD_COLOR lv_palette_darken(LV_PALETTE_DEEP_ORANGE, 4)
-
-/* LABEL COLORS */
-#define LABEL_COLOR lv_palette_lighten(LV_PALETTE_BLUE_GREY, 3)
 
 /* SAVING CHART COLORS */
 #define CHART_LINE1_COLOR lv_palette_darken(LV_PALETTE_BLUE, 1)
@@ -47,6 +41,4 @@ typedef struct  {
 	uint32_t trade_value[12];
 } saving_data;
 
-void box_style_init(lv_style_t *const style);
-void subtitle_style_init(lv_style_t *const style);
 lv_obj_t* savings_screen(const saving_data *data);
