@@ -312,8 +312,6 @@ void bill_box_init(lv_obj_t *const bill_box, const lv_obj_t *const saving_chart_
 
 lv_obj_t* savings_screen(const saving_data *data) 
 {
-	//lvgl_port_lock(0);
-
 	lv_obj_t *scr = lv_obj_create(NULL);
 
 	// Background
@@ -341,10 +339,6 @@ lv_obj_t* savings_screen(const saving_data *data)
 	/************************ BILL  STATUS BOX ***************************/
 	lv_obj_t *bill_box = lv_obj_create(scr);
 	bill_box_init(bill_box, saving_box, &box_style, &subtitle_style, data);
-
-	//lv_screen_load(scr);
-
-	//lvgl_port_unlock();
 
 	return scr;
 }

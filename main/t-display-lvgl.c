@@ -48,40 +48,39 @@ static void wifi_icon_anim_stop()
 	lv_anim_del(wifi_status, anim_opacity_cb);
 }
 
-void status_bar_init(lv_obj_t *const dashboard_bar, const lv_style_t *const bar_style, const lv_style_t *const label_style, const saving_data *const data) 
+void status_bar_init(lv_obj_t *const status_bar, const lv_style_t *const bar_style, const lv_style_t *const label_style, const saving_data *const data) 
 {
 	//bar style
-	lv_obj_add_style(dashboard_bar, bar_style, 0);
-	lv_obj_set_style_size(dashboard_bar, 230, 20, 0);
-	lv_obj_align(dashboard_bar, LV_ALIGN_TOP_MID, 0, 5);
+	lv_obj_add_style(status_bar, bar_style, 0);
+	lv_obj_set_style_size(status_bar, 230, 20, 0);
+	lv_obj_align(status_bar, LV_ALIGN_TOP_MID, 0, 5);
 
 	//refresh symbol
-	lv_obj_t *refresh_data_symbol = lv_label_create(dashboard_bar);
+	lv_obj_t *refresh_data_symbol = lv_label_create(status_bar);
 	lv_label_set_text(refresh_data_symbol, LV_SYMBOL_REFRESH " ");
 	lv_obj_add_style(refresh_data_symbol, label_style, 0);
 	lv_obj_align(refresh_data_symbol, LV_ALIGN_LEFT_MID, 5, 0);
 
 	//refresh date
-	lv_obj_t *refresh_data_label = lv_label_create(dashboard_bar);
-	lv_label_set_text(refresh_data_label, (data->saving_update_date));
+	lv_obj_t *refresh_data_label = lv_label_create(status_bar);
+	lv_label_set_text(refresh_data_label, "25/12");
 	lv_obj_add_style(refresh_data_label, label_style, 0);
 	lv_obj_set_style_text_font(refresh_data_label, &lv_font_montserrat_10, 0);
 	lv_obj_align_to(refresh_data_label, refresh_data_symbol, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
 
 	//Title
-	lv_obj_t *dashboard_title = lv_label_create(dashboard_bar);
+	lv_obj_t *dashboard_title = lv_label_create(status_bar);
 	lv_obj_set_style_text_font(dashboard_title, &lv_font_montserrat_16, 0);
 	lv_label_set_text(dashboard_title, "Financas");
 	lv_obj_add_style(dashboard_title, label_style, 0);
 	lv_obj_align(dashboard_title, LV_ALIGN_CENTER, 0, 0);
 
 	//wifi connection status
-	wifi_status = lv_label_create(dashboard_bar);
+	wifi_status = lv_label_create(status_bar);
 	lv_label_set_text(wifi_status, LV_SYMBOL_WIFI);
 	lv_obj_add_style(wifi_status, label_style, 0);
 	lv_obj_align(wifi_status, LV_ALIGN_RIGHT_MID, -5, 0);
 	lv_obj_set_style_text_opa(wifi_status, LV_OPA_20, 0);
-
 }
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
@@ -164,8 +163,6 @@ void app_main(void)
 	/*		Init saving screen data		*/
 	saving_data data = 
 	{
-		.saving_update_date = "16/06",
-		.connection_status = true,
 		.rent_status = true,
 		.car_status = true,
 		.light_status = false,
