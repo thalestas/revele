@@ -1,20 +1,12 @@
-#include "display/lv_display.h"
-#include "esp_err.h"
 #include "display.h"
-#include "esp_event.h"
-#include "esp_event_base.h"
-#include "esp_lcd_types.h"
-#include "esp_netif.h"
-#include "esp_wifi_default.h"
-#include "esp_wifi_types_generic.h"
+#include "display/lv_display.h"
 #include "lvgl_port.h"
-#include "nvs.h"
-#include "nvs_flash.h"
 #include "screens/savings_screen.h"
-#include "esp_lvgl_port.h"
 #include "styles/styles.h"
 
-#include "wifi_provisioning/manager.h"
+#include "esp_event.h"
+#include "nvs_flash.h"
+#include "esp_lvgl_port.h"
 #include "wifi_provisioning/scheme_softap.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
@@ -153,14 +145,14 @@ void connect_wifi()
 
 void app_main(void)
 {
-	/*		Init LVGL		*/
+	// Init LVGL
 	static esp_lcd_panel_io_handle_t io_handle;
 	static esp_lcd_panel_handle_t panel_handle;
 
 	ESP_ERROR_CHECK(app_lcd_init(&io_handle, &panel_handle));
 	lv_display_t *lvgl_disp = lvgl_init(&io_handle, &panel_handle);
 
-	/*		Init saving screen data		*/
+	// Init saving screen data
 	saving_data data = 
 	{
 		.rent_status = true,
@@ -176,8 +168,7 @@ void app_main(void)
 		.trade_value = {1, 5, 14, 19, 23}
 	};
 
-	/*		Start saving screen		*/
-	lvgl_port_lock(0);
+	// Start saving screen
 
 	status_bar = lv_obj_create(lv_layer_top());
 
@@ -193,11 +184,13 @@ void app_main(void)
 	status_bar_init(status_bar, &box_style, &subtitle_style, &data);
 
 	lv_obj_t *sav_scr = savings_screen(&data);
-	lv_screen_load(sav_scr);
 
+	lvgl_port_lock(0);
+	lv_screen_load(sav_scr);
 	lvgl_port_unlock();
 
-	/*		Wifi connection		*/
+
 	connect_wifi();
+
 }
 
