@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lvgl.h"
 #include <stdint.h>
 
+#include "lvgl.h"
 
 /* SPEND BARS COLORS */
 #define BAR_OPACITY LV_OPA_COVER
@@ -17,28 +17,28 @@
 
 LV_FONT_DECLARE(fontawesome);
 LV_FONT_DECLARE(nerdfont);
-#define SYMBOL_HOUSE		"\xEF\x91\xAD"
-#define SYMBOL_CAR	 		"\xEE\xBA\xA0"
-#define SYMBOL_LIGHT 		"\xEF\x90\x80"
-#define SYMBOL_WIFI  		"\xF3\xB0\xBA\x90"
-#define SYMBOL_WATER		"\xEE\x80\x86"
-#define SYMBOL_KETTLEBELL		"\xF3\xB1\x8C\x80"
-#define SYMBOL_INSURANCE	"\xF3\xB0\xBE\x83"
+#define SYMBOL_HOUSE "\xEF\x91\xAD"
+#define SYMBOL_CAR "\xEE\xBA\xA0"
+#define SYMBOL_LIGHT "\xEF\x90\x80"
+#define SYMBOL_WIFI "\xF3\xB0\xBA\x90"
+#define SYMBOL_WATER "\xEE\x80\x86"
+#define SYMBOL_KETTLEBELL "\xF3\xB1\x8C\x80"
+#define SYMBOL_INSURANCE "\xF3\xB0\xBE\x83"
 
-typedef struct  {
-	const char *saving_update_date;
-	bool connection_status;
-	bool rent_status;
-	bool car_status;
-	bool light_status;
-	bool wifi_status;
-	bool water_status;
-	bool gym_status;
-	bool insurance_status;
-	uint32_t total_spend;
-	uint32_t general_spend;
-	uint32_t aforro_value[12];
-	uint32_t trade_value[12];
+typedef struct {
+  const char *saving_update_date;
+  bool connection_status;
+  bool rent_status;
+  bool car_status;
+  bool light_status;
+  bool wifi_status;
+  bool water_status;
+  bool gym_status;
+  bool insurance_status;
+  uint32_t total_spend;
+  uint32_t general_spend;
+  uint32_t aforro_value[12];
+  uint32_t trade_value[12];
 } saving_data;
 
-lv_obj_t* savings_screen(const saving_data *data);
+lv_obj_t *savings_screen(const saving_data *data);
