@@ -1,0 +1,28 @@
+name: ESP-IDF build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install ESP-IDF
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git wget flex bison gperf python3 python3-pip cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+          git clone --recursive https://github.com/espressif/esp-idf.git esp-idf
+          cd esp-idf
+          git checkout v5.5
+          ./install.sh esp32
+          
+      - name: Build project
+        run: |
+          . ./esp-idf/export.sh
+          idf.py --version
+          idf.py build
