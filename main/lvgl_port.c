@@ -1,3 +1,4 @@
+#include "display.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_lvgl_port.h"
@@ -5,8 +6,12 @@
 
 static char* TAG = "lvgl_port";
 
-lv_display_t* lvgl_init(esp_lcd_panel_io_handle_t* const io_handle,
-                        esp_lcd_panel_handle_t* const panel_handle) {
+void lvgl_init() {
+  // Init Display
+  static esp_lcd_panel_io_handle_t io_handle;
+  static esp_lcd_panel_handle_t panel_handle;
+  ESP_ERROR_CHECK(app_lcd_init(&io_handle, &panel_handle));
+
   // Init LVGL
   ESP_LOGI(TAG, "LVGL initialization");
   const lvgl_port_cfg_t lvgl_config = {.task_priority = 4,
@@ -19,8 +24,8 @@ lv_display_t* lvgl_init(esp_lcd_panel_io_handle_t* const io_handle,
   // Add LCD
   ESP_LOGI(TAG, "Add LCD");
   const lvgl_port_display_cfg_t disp_cfg = {
-      .io_handle = *io_handle,
-      .panel_handle = *panel_handle,
+      .io_handle = io_handle,
+      .panel_handle = panel_handle,
       .buffer_size = LCD_H_RES * LCD_V_RES,
       .double_buffer = false,
       .hres = LCD_H_RES,
@@ -37,5 +42,7 @@ lv_display_t* lvgl_init(esp_lcd_panel_io_handle_t* const io_handle,
           .buff_dma = true,
           .swap_bytes = true,
       }};
-  return lvgl_port_add_disp(&disp_cfg);
+
+  lv_display_t* lvgl_disp = lvgl_port_add_disp(&disp_cfg);
+  return;
 }
