@@ -1,8 +1,7 @@
-#include "lvgl_port.h"
-
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_lvgl_port.h"
+#include "lvgl_port.h"
 
 static char* TAG = "lvgl_port";
 
@@ -23,7 +22,7 @@ lv_display_t* lvgl_init(esp_lcd_panel_io_handle_t* const io_handle,
       .io_handle = *io_handle,
       .panel_handle = *panel_handle,
       .buffer_size = LCD_H_RES * LCD_V_RES,
-      .double_buffer = true,
+      .double_buffer = false,
       .hres = LCD_H_RES,
       .vres = LCD_V_RES,
       .monochrome = false,
