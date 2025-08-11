@@ -1,9 +1,12 @@
+#include <string.h>
+
 #include "driver/sdspi_host.h"
 #include "driver/spi_common.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_vfs_fat.h"
 #include "hal/spi_types.h"
+#include "misc/lv_fs.h"
 #include "sd_protocol_types.h"
 #include "sdcard.h"
 #include "sdmmc_cmd.h"
@@ -13,7 +16,7 @@ static const char *TAG = "sdcard";
 
 void init_sdcard() {
   esp_err_t err;
-  ESP_LOGI(TAG, "Init sdcard");
+  ESP_LOGI(TAG, SDCARD_PATH);
 
   spi_bus_config_t bus_cfg = {
       .mosi_io_num = 26,
@@ -51,4 +54,30 @@ void init_sdcard() {
 
   sdmmc_card_print_info(stdout, sdcard);
   ESP_LOGI(TAG, "sdcard mounted in %s", MOUNT_POINT);
+}
+
+void list_dir(const char *path) {
+  lv_fs_dir_t dir;
+  lv_fs_res_t res;
+  res = lv_fs_dir_open(&dir, path);
+  if (res != LV_FS_RES_OK) {
+    ESP_LOGE(TAG, "Error to open %s", path);
+    return;
+  }
+
+  char fn[256];
+  while (1) {
+    res = lv_fs_dir_read(&dir, fn, sizeof(fn));
+    if (res != LV_FS_RES_OK) {
+      ESP_LOGE(TAG, "Error to read dir");
+      break;
+    }
+
+    if (strlen(fn) == 0) {
+      break;
+    }
+
+    ESP_LOGI(TAG, "File %s", fn);
+  }
+  lv_fs_dir_close(&dir);
 }
