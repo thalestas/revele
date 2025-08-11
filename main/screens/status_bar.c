@@ -34,11 +34,11 @@ void status_bar_init() {
                   LV_ALIGN_OUT_RIGHT_MID, 0, 0);
 
   // Title
-  lv_obj_t *dashboard_title = lv_label_create(status_bar);
-  lv_obj_set_style_text_font(dashboard_title, &lv_font_montserrat_16, 0);
-  lv_label_set_text(dashboard_title, "Financas");
-  lv_obj_add_style(dashboard_title, &subtitle_style, 0);
-  lv_obj_align(dashboard_title, LV_ALIGN_CENTER, 0, 0);
+  status_bar_title = lv_label_create(status_bar);
+  lv_obj_set_style_text_font(status_bar_title, &lv_font_montserrat_16, 0);
+  lv_label_set_text(status_bar_title, "Financas");
+  lv_obj_add_style(status_bar_title, &subtitle_style, 0);
+  lv_obj_align(status_bar_title, LV_ALIGN_CENTER, 0, 0);
 
   // wifi connection status
   wifi_status = lv_label_create(status_bar);
@@ -85,4 +85,11 @@ void wifi_event_handler(void *arg, esp_event_base_t event_base,
     lv_obj_set_style_text_opa(wifi_status, LV_OPA_COVER, 0);
   }
   lvgl_port_unlock();
+}
+
+void set_status_bar_opa(lv_opa_t value) {
+  lv_obj_set_style_opa(status_bar, value, 0);
+}
+void set_status_bar_text(const char *text) {
+  lv_label_set_text(status_bar_title, text);
 }
