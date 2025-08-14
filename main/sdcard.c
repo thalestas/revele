@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <string.h>
 
 #include "driver/sdspi_host.h"
@@ -80,4 +81,45 @@ void list_dir(const char *path) {
     ESP_LOGI(TAG, "File %s", fn);
   }
   lv_fs_dir_close(&dir);
+}
+
+void get_next_file(const char *path, char *file) {
+  static lv_fs_dir_t dir;
+  lv_fs_res_t res;
+  if (dir.dir_d == NULL) {
+    res = lv_fs_dir_open(&dir, path);
+    if (res != LV_FS_RES_OK) {
+      ESP_LOGE(TAG, "Error to open %s", path);
+      return;
+    }
+  }
+
+  res = lv_fs_dir_read(&dir, file, 256);
+  if (res != LV_FS_RES_OK) {
+    ESP_LOGE(TAG, "Error to read dir");
+    return;
+  }
+
+  if (strlen(file) == 0) {
+    lv_fs_dir_close(&dir);
+    return;
+  }
+}
+
+void get_next_img_path(const char *img) {
+  char file[100];
+
+  strcpy(img, "S:");
+  get_next_file("S:", file);
+  // If reach last file, calls next again
+  if (strlen(file) == 0) {
+    get_next_file("S:", file);
+  }
+  // Set string lower case
+  for (int i = 0; file[i]; i++) {
+    file[i] = tolower(file[i]);
+  }
+
+  strcat(img, file);
+  ESP_LOGI("TAG", "img: %s", img);
 }

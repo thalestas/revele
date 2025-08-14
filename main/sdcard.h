@@ -4,3 +4,4 @@
 
 void init_sdcard();
 void list_dir(const char *path);
+void get_next_img_path(const char *img);
